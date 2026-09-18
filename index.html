@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>篮训工作台 · 青少年一个月训练计划</title>
+<style>
+  :root {
+    --bg: #0e0e11;
+    --panel: #17171c;
+    --panel-2: #1f1f26;
+    --pink: #ff5c8a;
+    --pink-soft: rgba(255, 92, 138, 0.14);
+    --pink-line: rgba(255, 92, 138, 0.35);
+    --text: #f2f2f5;
+    --text-dim: #9a9aa5;
+    --line: #2a2a33;
+    --green: #4ade80;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    min-height: 100vh;
+  }
+  /* ===== 顶部 ===== */
+  header {
+    background: linear-gradient(135deg, #0a0a0d 0%, #1a1016 60%, #241019 100%);
+    border-bottom: 1px solid var(--pink-line);
+    padding: 26px 32px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    width: 54px; height: 54px;
+    background: var(--pink-soft);
+    border: 2px solid var(--pink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  h1 { font-size: 22px; letter-spacing: 1px; }
+  h1 .pink { color: var(--pink); }
+  .sub { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+  .head-stats { margin-left: auto; display: flex; gap: 14px; }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    text-align: center;
+    min-width: 96px;
+  }
+  .stat .num { font-size: 22px; font-weight: 700; color: var(--pink); }
+  .stat .lbl { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* ===== 进度条 ===== */
+  .progress-wrap { padding: 16px 32px 0; }
+  .progress-bar-bg {
+    height: 10px; background: var(--panel-2);
+    border-radius: 6px; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .progress-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #ff8fb1, var(--pink));
+    border-radius: 6px;
+    transition: width .4s ease;
+  }
+  .progress-text { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+  /* ===== Tabs ===== */
+  nav.tabs {
+    display: flex; gap: 8px;
+    padding: 18px 32px 0;
+  }
+  .tab-btn {
+    background: var(--panel);
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--pink-line); }
+  .tab-btn.active {
+    background: var(--pink-soft);
+    color: var(--pink);
+    border-color: var(--pink);
+    font-weight: 600;
+  }
+
+  main { padding: 20px 32px 60px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== 周阶段卡 ===== */
+  .phase-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .phase-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--pink);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .phase-card .wk { font-size: 12px; color: var(--pink); font-weight: 600; }
+  .phase-card .nm { font-size: 15px; font-weight: 600; margin: 4px 0; }
+  .phase-card .ds { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* ===== 日历 ===== */
+  .cal-head {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .cal-head div {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 6px 0;
+  }
+  .cal-head div.wkend { color: var(--pink); }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .day {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-height: 92px;
+    padding: 8px;
+    position: relative;
+    transition: border-color .2s, transform .2s;
+  }
+  .day.out { opacity: .35; }
+  .day .dnum { font-size: 13px; color: var(--text-dim); }
+  .day .month-tag { font-size: 10px; color: var(--text-dim); margin-left: 3px; }
+  .day.session {
+    background: linear-gradient(160deg, var(--panel-2), #241218);
+    border: 1px solid var(--pink-line);
+    cursor: pointer;
+  }
+  .day.session:hover { transform: translateY(-2px); border-color: var(--pink); }
+  .day.session .dnum { color: var(--pink); font-weight: 700; }
+  .day .s-title { font-size: 12px; font-weight: 600; margin-top: 6px; line-height: 1.4; }
+  .day .s-tag {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--pink);
+    background: var(--pink-soft);
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-top: 6px;
+  }
+  .day.done { border-color: var(--green); }
+  .day.today {
+    border: 2px solid var(--pink);
+    box-shadow: 0 0 10px rgba(255, 92, 138, .45);
+  }
+  .day.today .dnum { color: var(--pink); font-weight: 700; }
+  .day .done-mark {
+    position: absolute; top: 8px; right: 8px;
+    color: var(--green); font-size: 13px; font-weight: 700;
+  }
+
+  /* ===== 训练库 ===== */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .filter-btn {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .filter-btn.active {
+    background: var(--pink-soft);
+    color: var(--pink);
+    border-color: var(--pink);
+    font-weight: 600;
+  }
+  #drill-search {
+    width: 100%;
+    max-width: 420px;
+    display: block;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  #drill-search:focus { border-color: var(--pink); }
+  .no-result {
+    color: var(--text-dim);
+    font-size: 14px;
+    padding: 24px 4px;
+  }
+  .drill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+  }
+  .drill-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    transition: border-color .2s, transform .2s;
+  }
+  .drill-card:hover { border-color: var(--pink-line); transform: translateY(-2px); }
+  .drill-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .drill-ico {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--pink-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .drill-name { font-size: 15px; font-weight: 600; }
+  .drill-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .drill-meta .diff { color: var(--pink); letter-spacing: 1px; }
+  .drill-points { font-size: 12.5px; color: var(--text-dim); line-height: 1.7; }
+  .drill-points b { color: var(--text); font-weight: 600; }
+
+  /* ===== 弹窗 ===== */
+  .modal-mask {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 50;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--pink-line);
+    border-radius: 18px;
+    max-width: 620px; width: 100%;
+    max-height: 86vh; overflow-y: auto;
+    padding: 26px 28px;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 4px; }
+  .modal .m-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+  .plan-sec { margin-bottom: 14px; }
+  .plan-sec .sec-head {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--pink-soft);
+    border-radius: 8px;
+    padding: 7px 12px;
+    margin-bottom: 8px;
+  }
+  .plan-sec .sec-head b { color: var(--pink); font-size: 13px; }
+  .plan-sec .sec-head span { font-size: 12px; color: var(--text-dim); }
+  .plan-sec ul { list-style: none; }
+  .plan-sec li {
+    font-size: 13px; color: var(--text);
+    padding: 4px 0 4px 18px;
+    position: relative; line-height: 1.6;
+  }
+  .plan-sec li::before {
+    content: "▸";
+    position: absolute; left: 4px;
+    color: var(--pink);
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .btn {
+    flex: 1;
+    padding: 11px 0;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn:hover { border-color: var(--pink-line); }
+  .btn.primary {
+    background: var(--pink);
+    border-color: var(--pink);
+    color: #14060b;
+    font-weight: 700;
+  }
+  .btn.primary.done-state {
+    background: transparent;
+    color: var(--green);
+    border-color: var(--green);
+  }
+  .close-x {
+    float: right;
+    background: none; border: none;
+    color: var(--text-dim); font-size: 20px;
+    cursor: pointer;
+  }
+  .close-x:hover { color: var(--pink); }
+
+  @media (max-width: 860px) {
+    .phase-strip { grid-template-columns: repeat(2, 1fr); }
+    .day { min-height: 72px; }
+    .day .s-title { font-size: 10px; }
+    header { padding: 20px; }
+    .head-stats { width: 100%; }
+    main, nav.tabs, .progress-wrap { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏀</div>
+  <div>
+    <h1>篮训<span class="pink">工作台</span></h1>
+    <div class="sub">青少年培训班 · 一个月周末训练计划 · 2026.09.19 — 2026.10.18</div>
+  </div>
+  <div class="head-stats">
+    <div class="stat"><div class="num" id="stat-total">10</div><div class="lbl">训练课次</div></div>
+    <div class="stat"><div class="num" id="stat-done">0</div><div class="lbl">已完成</div></div>
+    <div class="stat"><div class="num" id="stat-min">900</div><div class="lbl">总时长(分钟)</div></div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  <div class="progress-text" id="ptext">月度进度：0 / 10 课已完成，继续加油！</div>
+</div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-view="calendar">📅 月度训练日历</button>
+  <button class="tab-btn" data-view="library">📕 训练内容库</button>
+</nav>
+
+<main>
+  <!-- 日历视图 -->
+  <section class="view active" id="view-calendar">
+    <div class="phase-strip" id="phase-strip"></div>
+    <div class="cal-head">
+      <div>周一</div><div>周二</div><div>周三</div><div>周四</div>
+      <div>周五</div><div class="wkend">周六</div><div class="wkend">周日</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </section>
+
+  <!-- 训练库视图 -->
+  <section class="view" id="view-library">
+    <input type="text" id="drill-search" placeholder="🔍 输入动作名搜索，如：投篮 / 防守" oninput="renderDrills()">
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="drill-grid" id="drill-grid"></div>
+  </section>
+</main>
+
+<!-- 课次详情弹窗 -->
+<div class="modal-mask" id="modal-mask">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal()">✕</button>
+    <h3 id="m-title"></h3>
+    <div class="m-sub" id="m-sub"></div>
+    <div id="m-body"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">关 闭</button>
+      <button class="btn primary" id="m-done-btn" onclick="toggleDone(currentKey)"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 数据 ================= */
+const SESSIONS = {
+  "2026-09-19": {
+    week: 1, title: "球性与运球入门", tag: "第1周 · 基础球性",
+    focus: "熟悉球性，建立正确原地运球手型与重心姿势",
+    warmup: ["绕场慢跑 2 圈 + 动态拉伸（弓步走、开合跳）", "双手抛接球游戏：头顶传递、胯下 8 字绕环", "绳梯步伐热身 2 组"],
+    main: [
+      "原地高低运球：左右手各 2 组 × 30 秒，眼睛目视前方",
+      "原地体前 V 字运球：左右手各 2 组 × 30 秒",
+      "行进间直线运球：全场 4 趟，强调手指手腕控球",
+      "趣味游戏「运球贴膏药」：边运球边追逐，掉球即被贴"
+    ],
+    game: ["运球红绿灯：教练喊口令，绿灯运球、红灯急停护球"],
+    cool: ["静态拉伸：手腕、脚踝、大腿前后侧各 20 秒", "围圈总结：每人说一个今天学会的动作"]
+  },
+  "2026-09-20": {
+    week: 1, title: "运球变向与护球", tag: "第1周 · 基础球性",
+    focus: "掌握体前变向运球，学会用身体护球",
+    warmup: ["绕场慢跑 + 动态拉伸", "球性复习：胯下 8 字、绕腿绕腰各 30 秒", "绳梯 + 侧滑步热身"],
+    main: [
+      "体前变向运球分解练习：原地 → 慢速行进 → 全速",
+      "锥筒变向运球：5 个锥筒蛇形绕行，左右手各 3 趟",
+      "护球对抗：两人一组，弱对抗下运球护球 30 秒轮换",
+      "不看球运球：抬头目视教练手势，培养球感"
+    ],
+    game: ["运球夺宝：在规定区域内边运球边抢他人手中的沙包"],
+    cool: ["静态拉伸 + 深呼吸放松", "提问回顾：变向时身体重心应该怎么变化？"]
+  },
+  "2026-09-26": {
+    week: 2, title: "传接球技术", tag: "第2周 · 传投基础",
+    focus: "掌握双手胸前传球与击地传球的基本动作",
+    warmup: ["慢跑 2 圈 + 动态拉伸", "双人球性游戏：一人运球一人抢断，30 秒轮换", "滑步热身 2 组"],
+    main: [
+      "双手胸前传接球：两人一组 5 米，各 30 次，强调接球迎球缓冲",
+      "击地传球：传球点落在两人中间 2/3 处，各 30 次",
+      "三人三角传球：顺时针、逆时针各 3 分钟",
+      "移动中二人传接球：全场推进 4 趟，不运球只传球"
+    ],
+    game: ["传球打靶：分组比拼命中墙靶次数，规定时间内计数"],
+    cool: ["静态拉伸（肩部、手臂重点）", "围圈分享：什么样的传球最容易接？"]
+  },
+  "2026-09-27": {
+    week: 2, title: "投篮姿势与定点投篮", tag: "第2周 · 传投基础",
+    focus: "建立正确投篮手型与发力顺序（下肢→手臂→手腕）",
+    warmup: ["慢跑 + 动态拉伸", "单手抛接球找手型：徒手投篮模仿操 20 次", "手腕手指热身操"],
+    main: [
+      "近距离单手投篮：篮下 1 米，每人 20 次，纠正手型与跟随动作",
+      "罚球线定点投篮：每人 10 次一轮，共 3 轮，记录命中数",
+      "45° 接球急停投篮：教练传球，接球即投，每人 15 次",
+      "一分钟投篮挑战：自投自抢，比拼进球数"
+    ],
+    game: ["投篮王中王：分两队 PK，命中不同点位得不同分数"],
+    cool: ["静态拉伸 + 投篮动作盲练（闭眼徒手 10 次）", "总结：BEEF 口诀（平衡、眼睛、肘部、跟随）"]
+  },
+  "2026-10-03": {
+    week: 3, title: "行进间上篮", tag: "第3周 · 攻防进阶",
+    focus: "掌握三步上篮节奏，学会左右手上篮",
+    warmup: ["慢跑 + 动态拉伸", "运球复习：全场直线运球 2 趟", "滑步 + 高抬腿热身"],
+    main: [
+      "三步上篮分解：无球走步「一大二小三高跳」节奏练习",
+      "持球上篮：右侧上篮每人 10 次，强调收球时机",
+      "左侧上篮：左手上篮每人 10 次（允许先用右手过渡）",
+      "运球接上篮：半场运一次球上篮，连续命中 3 球换人"
+    ],
+    game: ["上篮接力赛：分两组比拼上篮命中速度"],
+    cool: ["静态拉伸（下肢重点）", "回顾口诀：一大二小三高跳"]
+  },
+  "2026-10-04": {
+    week: 3, title: "个人防守站位", tag: "第3周 · 攻防进阶",
+    focus: "学会防守姿势、滑步移动与一对一贴身防守",
+    warmup: ["慢跑 + 动态拉伸", "侧滑步练习：全场滑步 3 趟", "影子游戏：跟随搭档移动热身"],
+    main: [
+      "防守基本姿势定型：屈膝、张手、重心低，静态保持 3 × 20 秒",
+      "滑步追逐：两人一对一镜像滑步，攻方变向守方跟随",
+      "锥筒折返滑步：Z 字路线滑步 4 趟",
+      "一对一对位：1/4 场攻防 30 秒轮换，防守人只移动不出手断球"
+    ],
+    game: ["防守占位抢椅子游戏：口令下快速落防守位"],
+    cool: ["静态拉伸（腿部重点）", "提问：防守时为什么要永远站在球与篮筐之间？"]
+  },
+  "2026-10-10": {
+    week: 4, title: "攻防转换与小组对抗", tag: "第4周 · 综合实战",
+    focus: "串联本月技术：运球突破、传球配合与快攻意识",
+    warmup: ["慢跑 + 动态拉伸", "综合球性复习：运球+传球+上篮串联热身", "两人快攻传接上篮 4 趟"],
+    main: [
+      "二打一快攻练习：半场 2v1，推进分球或自己上篮",
+      "三打二快攻：全场 3v2 攻防转换，每人轮转攻守",
+      "3v3 半场对抗：15 分钟，教练暂停讲解站位与跑位",
+      "战术小课堂：挡拆配合演示与试用"
+    ],
+    game: ["3v3 小场积分赛：进球 1 分、助攻额外 1 分"],
+    cool: ["拉伸放松", "点评：本月技术在实际对抗中的运用情况"]
+  },
+  "2026-10-11": {
+    week: 4, title: "综合对抗演练", tag: "第4周 · 综合实战",
+    focus: "以赛代练，巩固运传投防全链条技术",
+    warmup: ["慢跑 + 动态拉伸", "罚球线投篮热身各 10 次", "滑步与折返跑激活"],
+    main: [
+      "4v4 全场对抗：上下半场各 10 分钟，设裁判规则",
+      "专项补练：按前几日对抗暴露的短板分组加练（投篮组/防守组）",
+      "绝杀挑战：最后 10 秒落后 2 分情境演练"
+    ],
+    game: ["友谊积分赛：累计月度积分，评选本日 MVP"],
+    cool: ["拉伸放松", "预告：下周月度测试赛，请回顾四个周的技术要点"]
+  },
+  "2026-10-17": {
+    week: 5, title: "月度技能测试", tag: "第5周 · 测试总结",
+    focus: "检验一个月训练成果，建立个人成长档案",
+    warmup: ["慢跑 + 动态拉伸", "各项目试做热身"],
+    main: [
+      "一分钟运球折返计时测试",
+      "罚球线投篮 10 次命中率测试",
+      "三步上篮左右侧各 5 次命中率测试",
+      "折返跑体能测试（记录成绩）"
+    ],
+    game: ["轻松投篮游戏：缓解测试紧张氛围"],
+    cool: ["拉伸放松", "逐人反馈测试成绩，对比入学基线"]
+  },
+  "2026-10-18": {
+    week: 5, title: "汇报赛与颁奖", tag: "第5周 · 测试总结",
+    focus: "家长开放日：汇报比赛 + 颁奖典礼，给孩子仪式感",
+    warmup: ["全体热身操 + 球性展示", "分队伍热身赛 5 分钟"],
+    main: [
+      "分组汇报赛：4v4 循环小赛，每场 8 分钟",
+      "技术展示环节：运球表演 + 投篮表演（自由报名）",
+      "月度颁奖：进步之星、防守之星、投篮王、MVP"
+    ],
+    game: ["亲子投篮游戏：邀请家长参与投篮互动"],
+    cool: ["集体拉伸", "总结致辞 + 下月计划预告"]
+  }
+};
+
+const PHASES = [
+  { wk: "第 1 周", nm: "基础球性", ds: "球性熟悉、原地与行进间运球、变向与护球", date: "09.19 - 09.20" },
+  { wk: "第 2 周", nm: "传投基础", ds: "双手胸前/击地传球、投篮手型与定点投篮", date: "09.26 - 09.27" },
+  { wk: "第 3 周", nm: "攻防进阶", ds: "三步上篮、个人防守站位与滑步", date: "10.03 - 10.04" },
+  { wk: "第 4-5 周", nm: "综合实战", ds: "快攻对抗、以赛代练、月度测试与汇报颁奖", date: "10.10 - 10.18" }
+];
+
+const CATS = [
+  { id: "all", name: "全部", ico: "🏀" },
+  { id: "dribble", name: "运球", ico: "🤾" },
+  { id: "pass", name: "传球", ico: "🔁" },
+  { id: "shoot", name: "投篮", ico: "🎯" },
+  { id: "layup", name: "上篮", ico: "🚀" },
+  { id: "def", name: "防守", ico: "🛡️" },
+  { id: "fit", name: "体能", ico: "💪" },
+  { id: "fun", name: "趣味游戏", ico: "🎉" }
+];
+
+const DRILLS = [
+  { cat: "dribble", ico: "🤾", name: "原地高低运球", dur: "10 分钟", diff: 1,
+    points: "<b>要点：</b>五指张开用手指控球，掌心不触球；高运球至腰部、低运球至膝盖；抬头目视前方，不看球。" },
+  { cat: "dribble", ico: "🤾", name: "体前 V 字变向", dur: "10 分钟", diff: 2,
+    points: "<b>要点：</b>球在体前左右推拉成 V 字，变向时降低重心、转肩探肩保护球；由慢到快渐进。" },
+  { cat: "dribble", ico: "🤾", name: "锥筒蛇形运球", dur: "12 分钟", diff: 2,
+    points: "<b>要点：</b>绕锥筒时外侧手运球，转体变向一步一带；掉球不慌，捡球继续。" },
+  { cat: "dribble", ico: "🤾", name: "不看球运球", dur: "8 分钟", diff: 2,
+    points: "<b>要点：</b>抬头看教练手势报数字，培养「眼离球、心控球」的球感，是实战抬头观察的基础。" },
+  { cat: "pass", ico: "🔁", name: "双手胸前传接球", dur: "12 分钟", diff: 1,
+    points: "<b>要点：</b>持球于胸前，蹬地伸臂翻腕拨指；接球时伸臂迎球、收臂缓冲，十指自然张开。" },
+  { cat: "pass", ico: "🔁", name: "击地传球", dur: "10 分钟", diff: 1,
+    points: "<b>要点：</b>落点在距接球人约 2/3 处，球反弹至同伴腰部高度；力量取决于距离而非大力。" },
+  { cat: "pass", ico: "🔁", name: "三人三角传球", dur: "12 分钟", diff: 2,
+    points: "<b>要点：</b>传球后向空位移动一步再接回传球，体会「传完就动」的习惯。" },
+  { cat: "shoot", ico: "🎯", name: "投篮手型与跟随", dur: "10 分钟", diff: 1,
+    points: "<b>要点：</b>BEEF 口诀——Balance 平衡、Eyes 看筐、Elbow 肘内收、Follow 手腕跟随拨指，食指中指最后离球。" },
+  { cat: "shoot", ico: "🎯", name: "罚球线定点投篮", dur: "15 分钟", diff: 2,
+    points: "<b>要点：</b>固定投篮前的运球与深呼吸小仪式；发力从下肢开始，全身协调一致。" },
+  { cat: "shoot", ico: "🎯", name: "一分钟投篮挑战", dur: "10 分钟", diff: 2,
+    points: "<b>要点：</b>自投自抢，抢板后快速落位再投；训练在疲劳下的投篮稳定性。" },
+  { cat: "layup", ico: "🚀", name: "三步上篮分解", dur: "15 分钟", diff: 2,
+    points: "<b>要点：</b>口诀「一大二小三高跳」；右手上篮右脚起跳、左腿高抬，收球时机在第二步。" },
+  { cat: "layup", ico: "🚀", name: "左右手交替上篮", dur: "12 分钟", diff: 3,
+    points: "<b>要点：</b>左侧用左手上篮，弱侧手不强可先用右手过渡，逐步建立两侧均衡终结能力。" },
+  { cat: "def", ico: "🛡️", name: "防守姿势与滑步", dur: "12 分钟", diff: 1,
+    points: "<b>要点：</b>屈膝降重心、双脚比肩宽、双手张开干扰传球路线；滑步时双脚不交叉、不跳步。" },
+  { cat: "def", ico: "🛡️", name: "一对一贴身防守", dur: "12 分钟", diff: 3,
+    points: "<b>要点：</b>永远站在球与篮筐之间；对手变向时用滑步跟上，手臂保持干扰不犯规。" },
+  { cat: "fit", ico: "💪", name: "绳梯步伐练习", dur: "8 分钟", diff: 1,
+    points: "<b>要点：</b>小碎步、进进出出、侧向三种节奏各 2 组；前脚掌着地，手臂配合摆动。" },
+  { cat: "fit", ico: "💪", name: "折返跑", dur: "8 分钟", diff: 2,
+    points: "<b>要点：</b>到线急停降重心、手触线再启动；转身时降低重心蹬地发力。" },
+  { cat: "fit", ico: "💪", name: "核心力量小游戏", dur: "8 分钟", diff: 1,
+    points: "<b>要点：</b>平板支撑击掌传球、仰卧举球卷腹传接，用游戏方式练核心，避免枯燥。" },
+  { cat: "fun", ico: "🎉", name: "运球贴膏药", dur: "10 分钟", diff: 1,
+    points: "<b>要点：</b>全程必须运球，掉球即视为被贴；追逐中练护球与变向，气氛热烈。" },
+  { cat: "fun", ico: "🎉", name: "运球红绿灯", dur: "6 分钟", diff: 1,
+    points: "<b>要点：</b>绿灯运球前进、红灯急停护球、黄灯慢速运球；锻炼急停急起的控球反应。" },
+  { cat: "fun", ico: "🎉", name: "3v3 小场比赛", dur: "15 分钟", diff: 2,
+    points: "<b>要点：</b>进球 1 分、助攻额外 1 分，鼓励传球配合；教练随时暂停讲解站位。" }
+];
+
+/* ================= 状态 ================= */
+const STORE_KEY = "basketball-workbench-done";
+let doneSet = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]"));
+let currentKey = null;
+let currentCat = "all";
+
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify([...doneSet]));
+  refreshStats();
+}
+
+function refreshStats() {
+  const total = Object.keys(SESSIONS).length;
+  const done = doneSet.size;
+  document.getElementById("stat-done").textContent = done;
+  document.getElementById("pbar").style.width = (done / total * 100) + "%";
+  document.getElementById("ptext").textContent =
+    done === total
+      ? "🎉 月度计划全部完成！为孩子们的表现鼓掌！"
+      : `月度进度：${done} / ${total} 课已完成，继续加油！`;
+  document.querySelectorAll(".day.session").forEach(el => {
+    el.classList.toggle("done", doneSet.has(el.dataset.key));
+  });
+  document.querySelectorAll(".day.session").forEach(el => {
+    let mark = el.querySelector(".done-mark");
+    if (doneSet.has(el.dataset.key) && !mark) {
+      mark = document.createElement("div");
+      mark.className = "done-mark";
+      mark.textContent = "✓";
+      el.appendChild(mark);
+    } else if (!doneSet.has(el.dataset.key) && mark) {
+      mark.remove();
+    }
+  });
+}
+
+/* ================= 阶段卡 ================= */
+document.getElementById("phase-strip").innerHTML = PHASES.map(p => `
+  <div class="phase-card">
+    <div class="wk">${p.wk} · ${p.date}</div>
+    <div class="nm">${p.nm}</div>
+    <div class="ds">${p.ds}</div>
+  </div>`).join("");
+
+/* ================= 日历 ================= */
+// 渲染 2026-09-14(周一) ~ 2026-10-18(周日)，共 5 周
+(function renderCalendar() {
+  const grid = document.getElementById("cal-grid");
+  const start = new Date(2026, 8, 14);   // 9月14日 周一
+  const end = new Date(2026, 9, 18);     // 10月18日 周日
+  let html = "";
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const d = new Date(start);
+  while (d <= end) {
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    const key = `${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const isToday = key === todayKey;
+    const isOut = (d.getMonth() === 8 && day < 19) || false; // 9月19日前为灰显
+    const s = SESSIONS[key];
+    const showMonth = day === 1 || (day === 14 && m === 9) ? `<span class="month-tag">${m}月</span>` : "";
+    if (s) {
+      html += `
+      <div class="day session${doneSet.has(key) ? " done" : ""}${isOut ? " out" : ""}${isToday ? " today" : ""}" data-key="${key}" onclick="openModal('${key}')">
+        <div class="dnum">${day}${showMonth}</div>
+        <div class="s-title">${s.title}</div>
+        <span class="s-tag">90min</span>
+      </div>`;
+    } else {
+      html += `<div class="day${isOut ? " out" : ""}${isToday ? " today" : ""}"><div class="dnum">${day}${showMonth}</div></div>`;
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  grid.innerHTML = html;
+})();
+
+/* ================= 训练库 ================= */
+function renderFilters() {
+  document.getElementById("filter-bar").innerHTML = CATS.map(c => `
+    <button class="filter-btn${c.id === currentCat ? " active" : ""}" onclick="setCat('${c.id}')">
+      ${c.ico} ${c.name}
+    </button>`).join("");
+}
+function renderDrills() {
+  const q = (document.getElementById("drill-search").value || "").trim();
+  const list = DRILLS.filter(d => (currentCat === "all" || d.cat === currentCat)
+    && (!q || d.name.includes(q) || d.points.includes(q)));
+  const html = list.map(d => `
+    <div class="drill-card">
+      <div class="drill-top">
+        <div class="drill-ico">${d.ico}</div>
+        <div>
+          <div class="drill-name">${d.name}</div>
+          <div class="drill-meta">⏱ ${d.dur} ｜ 难度 <span class="diff">${"★".repeat(d.diff)}${"☆".repeat(3 - d.diff)}</span></div>
+        </div>
+      </div>
+      <div class="drill-points">${d.points}</div>
+    </div>`).join("") || `<div class="no-result">🔍 没找到匹配的动作，换个关键词试试～</div>`;
+  document.getElementById("drill-grid").innerHTML = html;
+}
+function setCat(id) { currentCat = id; renderFilters(); renderDrills(); }
+renderFilters(); renderDrills();
+
+/* ================= 弹窗 ================= */
+function secBlock(title, time, items) {
+  return `
+  <div class="plan-sec">
+    <div class="sec-head"><b>${title}</b><span>${time}</span></div>
+    <ul>${items.map(i => `<li>${i}</li>`).join("")}</ul>
+  </div>`;
+}
+function openModal(key) {
+  const s = SESSIONS[key];
+  if (!s) return;
+  currentKey = key;
+  document.getElementById("m-title").textContent = `🏀 ${s.title}`;
+  document.getElementById("m-sub").textContent =
+    `${s.tag} ｜ ${key.replace(/-/g, ".")} ｜ 时长 90 分钟`;
+  let body = secBlock("🔥 热身激活", "约 15 分钟", s.warmup);
+  body += secBlock("📋 主题训练", "约 55 分钟", s.main);
+  body += secBlock("🎮 实战游戏", "约 15 分钟", s.game);
+  body += secBlock("🧘 放松总结", "约 5 分钟", s.cool);
+  body += `<div class="plan-sec"><div class="sec-head"><b>🎯 本课重点</b><span></span></div>
+    <ul><li>${s.focus}</li></ul></div>`;
+  document.getElementById("m-body").innerHTML = body;
+  const btn = document.getElementById("m-done-btn");
+  const isDone = doneSet.has(key);
+  btn.textContent = isDone ? "✓ 已完成（点击取消）" : "标记为已完成";
+  btn.classList.toggle("done-state", isDone);
+  document.getElementById("modal-mask").classList.add("show");
+}
+function closeModal() {
+  document.getElementById("modal-mask").classList.remove("show");
+  currentKey = null;
+}
+function toggleDone(key) {
+  if (!key) return;
+  if (doneSet.has(key)) doneSet.delete(key); else doneSet.add(key);
+  save();
+  openModal(key); // 刷新按钮状态
+}
+document.getElementById("modal-mask").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+/* ================= Tabs ================= */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-" + btn.dataset.view).classList.add("active");
+  });
+});
+
+refreshStats();
+</script>
+</body>
+</html>
